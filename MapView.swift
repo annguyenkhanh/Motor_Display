@@ -1,16 +1,24 @@
 import SwiftUI
 import MapKit
 
-struct MapView: UIViewRepresentable {
+struct MapView:UIViewRepresentable{
 
-    @Binding var region: MKCoordinateRegion
-    @Binding var routePolyline: MKPolyline?
+    var routes:[MKRoute]
+
+    @Binding var selected:Int?
 
     func makeUIView(context:Context)->MKMapView{
 
         let map = MKMapView()
 
-        map.setRegion(region, animated:false)
+        map.delegate = context.coordinator
+
+        let tap = UITapGestureRecognizer(
+            target:context.coordinator,
+            action:#selector(Coordinator.tapMap(_:))
+        )
+
+        map.addGestureRecognizer(tap)
 
         return map
     }
@@ -19,34 +27,69 @@ struct MapView: UIViewRepresentable {
 
         map.removeOverlays(map.overlays)
 
-        if let route = routePolyline {
+        for (index,route) in routes.enumerated(){
 
-            map.addOverlay(route)
+            map.addOverlay(route.polyline)
+
+            context.coordinator.routes = routes
+            context.coordinator.selected = $selected
         }
-
-        map.delegate = context.coordinator
     }
 
     func makeCoordinator()->Coordinator{
+
         Coordinator()
     }
 
-    class Coordinator:NSObject, MKMapViewDelegate{
+    class Coordinator:NSObject,MKMapViewDelegate{
+
+        var routes:[MKRoute] = []
+
+        var selected:Binding<Int?>?
 
         func mapView(_ mapView:MKMapView,
                      rendererFor overlay:MKOverlay)->MKOverlayRenderer{
 
-            if let polyline = overlay as? MKPolyline {
+            guard let poly = overlay as? MKPolyline else {
 
-                let renderer = MKPolylineRenderer(polyline:polyline)
-
-                renderer.strokeColor = .systemBlue
-                renderer.lineWidth = 5
-
-                return renderer
+                return MKOverlayRenderer()
             }
 
-            return MKOverlayRenderer()
+            let renderer = MKPolylineRenderer(polyline:poly)
+
+            renderer.lineWidth = 6
+
+            renderer.strokeColor = .gray
+
+            return renderer
+        }
+
+        @objc func tapMap(_ gesture:UITapGestureRecognizer){
+
+            let map = gesture.view as! MKMapView
+
+            let point = gesture.location(in:map)
+
+            let coord = map.convert(point,toCoordinateFrom:map)
+
+            var closest = 0
+            var bestDistance = Double.infinity
+
+            for (i,route) in routes.enumerated(){
+
+                let first = route.polyline.coordinates.first!
+
+                let d = hypot(first.latitude-coord.latitude,
+                              first.longitude-coord.longitude)
+
+                if d < bestDistance{
+
+                    bestDistance = d
+                    closest = i
+                }
+            }
+
+            selected?.wrappedValue = closest
         }
     }
 }

@@ -78,18 +78,47 @@ struct ContentView: View {
         }
     }
 
-    func sendRouteToDisplay(){
+    func pushRoute(){
 
-        guard let polyline = routePolyline else { return }
+        guard let index = selectedRoute else { return }
 
-        var points:[[Double]] = []
+        let route = routes[index]
 
-        let coords = polyline.coordinates
+        let coords = route.polyline.coordinates
 
-        for c in coords {
-            points.append([c.latitude,c.longitude])
+        let compressed = RouteCompressor.compress(coords:coords)
+
+        ble.sendRoute(points:compressed)
+    }
+
+    func pushRoute(){
+
+        guard let index = selectedRoute else { return }
+
+        let route = routes[index]
+
+        let coords = route.polyline.coordinates
+
+        let compressed = RouteCompressor.compress(coords:coords)
+
+        let turns = TurnExtractor.extract(route:route)
+
+        var turnJSON:[[String:Any]] = []
+
+        for t in turns {
+
+            turnJSON.append([
+                "lat":t.lat,
+                "lon":t.lon,
+                "type":t.type.rawValue
+            ])
         }
 
-        ble.sendRoute(points:points)
+        let payload:[String:Any] = [
+            "route":compressed,
+            "turns":turnJSON
+        ]
+
+        ble.sendJSON(payload)
     }
 }
