@@ -1,4 +1,3 @@
-; # 🚴 Smart BLE Navigation Display
 # 🗺️ Smart BLE Navigation Display
 
 A DIY **motorbike navigation display system** that connects an iPhone app to an ESP32 device via Bluetooth Low Energy (BLE).
