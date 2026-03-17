@@ -30,7 +30,7 @@ The device renders the route line and navigation cues in real time — similar t
 * Extracts navigation steps automatically
 * Converts them into simple instructions:
 
-```
+```raw
 LEFT
 RIGHT
 STRAIGHT
@@ -47,7 +47,7 @@ Raw routes may contain thousands of points.
 
 This project compresses them before sending:
 
-```
+```raw
 5000 GPS points → ~80 points
 ```
 
@@ -70,38 +70,23 @@ The ESP32 device:
 
 # 🏗 System Architecture
 
-```
-┌────────────────────────┐
-│       iPhone App       │
-│                        │
-│  MapKit Navigation     │
-│  Route Calculation     │
-│  Turn Detection        │
-│  Route Compression     │
-│                        │
-└───────────┬────────────┘
-            │
-            │ BLE
-            ▼
-┌────────────────────────┐
-│       ESP32 Device     │
-│                        │
-│  BLE Receiver          │
-│  JSON Route Parser     │
-│  Coordinate Projection │
-│  Vector Route Renderer │
-│                        │
-└───────────┬────────────┘
-            │
-            ▼
-     Small TFT Display
+```raw
+flowchart LR
+    A[User] --> B[iOS App]
+    B --> C[Route Processing]
+    C --> D[BLE Transmission]
+    D --> E[ESP32]
+    E --> F[GPS Module]
+    E --> G[Display]
+    F --> E
+    E --> G
 ```
 
 ---
 
 # 📦 Project Structure
 
-```
+```raw
 smart-navigation-display
 │
 ├── ios-app
@@ -179,7 +164,7 @@ Responsibilities:
 
 GPS coordinates are projected into screen coordinates using a simple projection model.
 
-```
+```raw
 x = (lon - centerLon) * scale
 y = (centerLat - lat) * scale
 ```
