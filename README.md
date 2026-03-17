@@ -71,15 +71,30 @@ The ESP32 device:
 # 🏗 System Architecture
 
 ```raw
-flowchart LR
-    A[User] --> B[iOS App]
-    B --> C[Route Processing]
-    C --> D[BLE Transmission]
-    D --> E[ESP32]
-    E --> F[GPS Module]
-    E --> G[Display]
-    F --> E
-    E --> G
+┌────────────────────────┐
+│       iPhone App       │
+│                        │
+│  MapKit Navigation     │
+│  Route Calculation     │
+│  Turn Detection        │
+│  Route Compression     │
+│                        │
+└───────────┬────────────┘
+            │
+            │ BLE
+            ▼
+┌────────────────────────┐
+│       ESP32 Device     │
+│                        │
+│  BLE Receiver          │
+│  JSON Route Parser     │
+│  Coordinate Projection │
+│  Vector Route Renderer │
+│                        │
+└───────────┬────────────┘
+            │
+            ▼
+     Small TFT Display
 ```
 
 ---
